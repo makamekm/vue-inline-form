@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="en">
+
+  <head>
+    <meta charset="utf-8">
+    <script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
+  </head>
+
+  <body>
+    <div id="app"> </div>
+  </body>
+  <script type="text/x-template" id="form">
+    <div>
+      <p>My name is: {{name}}</p><br/>
+      <input type="text" placeholder="Type your name here" v-model="name"/>
+      <button @click="submit">Submit</button>
+      <p v-if="result">The result is: {{result}} code</p>
+    </div>
+  </script>
+  <script>
+    var serialize = function(obj) {
+      var str = [];
+      for (var p in obj)
+        if (obj.hasOwnProperty(p)) {
+          str.push(encodeURIComponent(p) + "=" + encodeURIComponent(obj[p]));
+        }
+      return str.join("&");
+    }
+    var POST = function(url, data, cb) {
+      const Http = new XMLHttpRequest();
+      Http.open("POST", url, true);
+      Http.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
+      Http.send(serialize(data));
+
+      Http.onreadystatechange = (e) => {
+        if (Http.readyState === 4) {
+          cb(Http.status, Http.responseText)
+        }
+      }
+    }
+    var app = new Vue({
+      el: '#app',
+      template: '#form',
+      data: function() {
+        return {
+          name: '',
+          result: ''
+        }
+      },
+      methods: {
+        submit($event) {
+          $event.preventDefault()
+          let self = this;
+          POST("/remote_api", {
+            name
+          }, (status, response) => {
+            this.result = status
+          })
+        }
+      }
+    })
+
+  </script>
+
+</html>
